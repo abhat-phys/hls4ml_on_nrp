@@ -6,12 +6,8 @@ This page is an end-to-end tutorial dealing with taking a Keras model all the wa
 
 hls4ml's Vitis backend stops at HLS synthesis and IP export. Three additional pieces are
 needed to reach a running accelerator: a kernel wrapper bridging hls4ml's streaming interface to AXI
-memory-mapped ports, a `v++` link against the U55C platform, and a host program driving
+memory-mapped ports, a `v++` link against the U55C platform, and a host program which drives
 the card through XRT.
-
-The host here is Python, using the `pyxrt` bindings that ship with XRT — no compiler
-needed. See **[REPLACE THIS PART WITH THE HYPERLINK TO THE C++ VERSION (IF WE DO THAT)]**
-for the XRT native-API equivalent, which produces bit-identical output.
 
 ## The three parts
 
