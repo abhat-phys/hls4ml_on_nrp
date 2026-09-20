@@ -1,6 +1,4 @@
----
-title: Running hls4ml end-to-end on NRP
----
+# Running hls4ml end-to-end on NRP
 
 This page is an end-to-end tutorial dealing with taking a Keras model all the way to hardware inference on Alveo U55C cards at the NRP cluster.
 
