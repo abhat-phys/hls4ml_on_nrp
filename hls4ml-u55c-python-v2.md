@@ -23,8 +23,7 @@ for the XRT native-API equivalent, which produces bit-identical output.
 | [2. Model to bitstream](#part-2--model-to-bitstream) | train, convert, wrapper, `v++ -c`, `v++ -l` | build, then a Job | No | ~4–7 h |
 | [3. Hardware validation](#part-3--hardware-validation) | load `.xclbin`, run, compare to Keras | FPGA pod | **Yes** | ~5 min |
 
-Only Part 3 needs a card. Requesting one during synthesis holds shared hardware idle for
-hours.
+Only Part 3 needs a card. Please avoid requesting a card during synthesis, because that would hold shared hardware resources idle for hours.
 
 Within Part 2, sections 5–7 run in seconds and can be re-run freely; sections 8–9 are the
 long Vitis steps.
@@ -57,7 +56,7 @@ inside the content, which matters for the Python and C++ files.
 
 ## Versions
 
-Verified end to end on 2026-09-10:
+Latest verified end to end run:
 
 | Component | Version |
 | --- | --- |
@@ -68,12 +67,6 @@ Verified end to end on 2026-09-10:
 | Part | `xcu55c-fsvh2892-2L-e` |
 | TensorFlow / Keras | tensorflow-cpu 2.19.1 / Keras 3.15.1 |
 | Python / numpy | 3.12 / 1.26.4 |
-
-**Note:**
-The [Vivado and Vitis](/documentation/userdocs/fpgas/vivado-vitis) page lists Vitis
-2021.2 and 2023.2 only. The tools PVC also carries **2024.2**, which is what this page
-uses — check `ls /tools/Xilinx/Vitis/` for what is actually mounted. Likewise the Coder
-image now ships XRT 2.19.194 rather than the 2.15.225 documented elsewhere.
 
 ---
 
@@ -307,7 +300,7 @@ EOF
 cd /work/run && python3 convert.py
 ```
 
-`write()` is enough — no need to call `build()`, because `v++ -c` runs HLS synthesis
+`write()` is enough, so there is no need to call `build()`, because `v++ -c` runs HLS synthesis
 itself in section 8.
 
 The wrapper in the next section must match the generated types:
@@ -537,7 +530,7 @@ link.
 
 **Caution:**
 Run the link as a `Job`, not a bare pod. Bare pods are killed with exit 137 and no
-surviving events, and Coder reaps long-running processes even under `screen` or `setsid`.
+surviving events, and Coder is unsuccessful with long-running processes even under `screen` or `setsid`.
 See [Running batch jobs](/documentation/userdocs/running/jobs).
 
 Free the build pod first — nothing after this needs it:
