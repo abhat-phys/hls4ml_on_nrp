@@ -451,7 +451,7 @@ hundreds of devices and then crashes in `realloc`. This kills `v++ --link` on 20
 2024.2 and 2025.2.
 
 `LD_PRELOAD` does not help: `libXil_lmgr11.so` obtains libudev through `dlopen`, not
-linkage — `ldd` shows no udev dependency — so lookups through the `dlopen` handle bypass
+linkage — `ldd` shows no udev dependency, so lookups through the `dlopen` handle bypass
 the preload. Shadowing it by soname on `LD_LIBRARY_PATH` does work.
 
 ```bash
@@ -485,10 +485,9 @@ gcc -shared -fPIC -Wl,-soname,libudev.so.1 -o /work/fakelib/libudev.so.1 /work/u
 
 Now set up the environment:
 
-:::caution
+**Caution:**
 Order matters. Source the settings scripts **first**, then export `LD_LIBRARY_PATH` —
 XRT's `setup.sh` overwrites it, so exporting first silently drops the stub.
-:::
 
 ```bash
 source /tools/Xilinx/Vitis/2024.2/settings64.sh
@@ -536,11 +535,10 @@ link.
 
 ## 9. Link to a bitstream
 
-:::caution
+**Caution:**
 Run the link as a `Job`, not a bare pod. Bare pods are killed with exit 137 and no
 surviving events, and Coder reaps long-running processes even under `screen` or `setsid`.
 See [Running batch jobs](/documentation/userdocs/running/jobs).
-:::
 
 Free the build pod first — nothing after this needs it:
 
@@ -620,20 +618,19 @@ kubectl logs job/hls4ml-link -n YOUR-NAMESPACE --tail=15
 
 Look for `Created build/kernel_wrapper.xclbin`.
 
-:::note
+**Note:**
 `kubectl exec` stops working once the Job's pod reaches `Succeeded`. Check timing while
 the Job is still running, or read the logs afterwards from the FPGA pod in Part 3 — the
 PVC keeps everything.
-:::
 
 ```bash
 kubectl delete job hls4ml-link -n YOUR-NAMESPACE
 ```
 
-### About timing
+### Note about timing
 
 **This design does not meet timing**, on any run we have done. Two independent builds gave
-WNS −4.5 to −4.8 ns against a 6.67 ns target, with TNS in the tens of thousands; hold
+WNS −4.5 to −4.8 ns against a 6.67 ns target, with TNS in the tens of thousands. Hold
 timing is met (WHS ≈ +0.009). The failing path is in one of the dense layers'
 multiply-accumulate chains, but *which* layer moves between builds, since it depends on
 the trained weights and the placement seed.
@@ -702,7 +699,6 @@ python3 -c "import numpy" 2>/dev/null || pip install --user numpy
 ```bash
 cat > /work/prj/host.py << 'EOF'
 #!/usr/bin/env python3
-"""Minimal pyxrt host for an hls4ml kernel_wrapper on Alveo U55C."""
 
 import sys
 import time
