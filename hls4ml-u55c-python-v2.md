@@ -31,13 +31,12 @@ hours.
 Within Part 2, sections 5–7 run in seconds and can be re-run freely; sections 8–9 are the
 long Vitis steps and are worth getting right the first time.
 
-**Note**
+**Note:**
 This page assumes the basics in
 [Requesting FPGAs from a Pod](/documentation/userdocs/fpgas/using-fpgas-from-pods). For an
 interactive GUI environment see
-[Vivado and Vitis](/documentation/userdocs/fpgas/vivado-vitis) — but long synthesis runs
-get reaped in Coder, which is why Part 2 uses a `Job`.
-:::
+[Vivado and Vitis](/documentation/userdocs/fpgas/vivado-vitis) — but long synthesis runs are unsuccessful in Coder, which is why Part 2 uses a `Job`.
+
 
 ## Frequently asked questions
 
