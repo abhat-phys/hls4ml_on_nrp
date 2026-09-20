@@ -41,9 +41,6 @@ get reaped in Coder, which is why Part 2 uses a `Job`.
 
 ## Frequently asked questions
 
-**Q: Does this need a fork of hls4ml?** A: No. Sections 4–6 use `fastmachinelearning/hls4ml`
-main, unmodified. Sections 7–10 are AMD Vitis and XRT tooling.
-
 **Q: Why can't hls4ml just build the bitstream itself?** A: On main today, no backend
 produces a U55C bitstream. `VitisAccelerator`
 ([PR #991](https://github.com/fastmachinelearning/hls4ml/pull/991)) does exactly this but
@@ -53,7 +50,7 @@ currently supports zcu102 and kv260, not Alveo. The Coyote backend does target t
 but replaces the card's static shell and needs a kernel module, neither of which is
 possible here.
 
-**Q: Do I need `xilinx.com/fpga_jtag`?** A: No. Loading an `.xclbin` uses the PCIe-side
+**Q: Will I need `xilinx.com/fpga_jtag`?** A: No. Loading an `.xclbin` uses the PCIe-side
 resource only. See
 [Before you request JTAG](/documentation/userdocs/fpgas/using-fpgas-from-pods#before-you-request-jtag-read-this).
 
@@ -63,7 +60,7 @@ it. See [section 8](#8-the-libudev-stub).
 
 **Q: My design failed timing. Is it broken?** A: Probably not. Vitis downscales the kernel
 clock at runtime, so a design with negative setup slack still computes correctly. The
-example here fails timing on every run and produces correct results. See
+example here fails timing on every run and produces correct results. Please see
 [section 9](#9-link-to-a-bitstream).
 
 **Q: How do I create the files this page shows?** A: Heredocs. `cat > path << 'EOF'`, paste
@@ -105,10 +102,7 @@ Coder FPGA template mounts at `/tools/Xilinx`. To use it from your own pods, ask
 cluster admins on [Nautilus Support](https://nrp.ai/contact/) for a PVC pointing at that
 volume in your namespace, then check with `kubectl get pvc -n YOUR-NAMESPACE`.
 
-**The registry pull secret.** The image used throughout is
-`gitlab-registry.nrp-nautilus.io/nrp/coder-images/vivado-vitis`, which carries XRT and the
-U55C platform files. If your namespace cannot pull it, ask for `gitlab-registry` on the
-same thread.
+**ErrImagePull with unauthorized or denied** The registry normally allows anonymous pulls from inside the cluster. If you hit an auth error, ask on Nautilus Support for an imagePullSecrets entry in your namespace.
 
 Licensing needs no action — the cluster FlexLM server at `2100@xilinxd.xilinx-dev` is
 reachable from any pod, and every manifest here sets `XILINXD_LICENSE_FILE`.
@@ -878,11 +872,11 @@ kubectl delete pod hls4ml-fpga -n YOUR-NAMESPACE
 A directory named `hls4ml` is shadowing the installed package. Python prepends the
 *script's* directory to `sys.path`, so this happens even when your working directory is
 elsewhere. Move the script somewhere with no `hls4ml` folder beside it. Confirm with
-`python3 -c "import hls4ml; print(hls4ml.__file__)"` — `None` means shadowed.
+`python3 -c "import hls4ml; print(hls4ml.__file__)"`. `None` means shadowed.
 
 ### `ImportError: fetch_openml requires pandas`
 
-`pandas` is not a hard dependency of scikit-learn. Install it: `pip install pandas`.
+`pandas` is not a hard dependency of scikit-learn. Install it with `pip install pandas`.
 
 ### `v++` segfaults during link, backtrace shows `udev_enumerate_scan_devices`
 
