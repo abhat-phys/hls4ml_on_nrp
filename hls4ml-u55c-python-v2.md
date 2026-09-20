@@ -1,15 +1,13 @@
 ---
-title: hls4ml on a U55C — Python host
-description: Take a Keras model from training to hardware inference on an Alveo U55C using hls4ml's Vitis backend, v++, and a pyxrt host program.
+title: Running hls4ml end-to-end on NRP
 ---
 
-This page is an end-to-end tutorial  Keras model all the way to hardware inference on an Alveo U55C 
+This page is an end-to-end tutorial dealing with taking a Keras model all the way to hardware inference on Alveo U55C cards at the NRP cluster.
 
-hls4ml's Vitis backend stops at HLS synthesis and IP export. Three further pieces are
-needed to reach a running accelerator, and all three are ordinary AMD Vitis tooling rather
-than hls4ml code: a kernel wrapper bridging hls4ml's streaming interface to AXI
+hls4ml's Vitis backend stops at HLS synthesis and IP export. Three additional pieces are
+needed to reach a running accelerator: a kernel wrapper bridging hls4ml's streaming interface to AXI
 memory-mapped ports, a `v++` link against the U55C platform, and a host program driving
-the card through XRT. This page supplies all three.
+the card through XRT.
 
 The host here is Python, using the `pyxrt` bindings that ship with XRT — no compiler
 needed. See **[REPLACE THIS PART WITH THE HYPERLINK TO THE C++ VERSION (IF WE DO THAT)]**
@@ -24,9 +22,6 @@ for the XRT native-API equivalent, which produces bit-identical output.
 | [3. Hardware validation](#part-3--hardware-validation) | load `.xclbin`, run, compare to Keras | FPGA pod | **Yes** | ~5 min |
 
 Only Part 3 needs a card. Please avoid requesting a card during synthesis, because that would hold shared hardware resources idle for hours.
-
-Within Part 2, sections 5–7 run in seconds and can be re-run freely; sections 8–9 are the
-long Vitis steps.
 
 **Note:**
 This page assumes the basics in
@@ -115,9 +110,9 @@ kubectl delete pod fixperms -n YOUR-NAMESPACE
 ```
 
 **Caution:**
-Do this **once, on a fresh PVC**, and do not use `chown -R`. A recursive chown over a
+Do this **once, on a fresh PVC**. Do not use `chown -R`, because recursive chown over a
 volume that already holds Vivado build trees walks hundreds of thousands of small files
-and can take ten minutes or more.
+and can over ten minutes.
 
 ## 3. Start a build pod
 
@@ -199,12 +194,14 @@ python3 -c "import hls4ml; print(hls4ml.__file__)"     # None means shadowed
 
 **Note:**
 `kubectl exec` gives you a fresh shell each time. After any reconnect, re-run
-`source ~/venv/bin/activate` — or rebuild the venv, if the pod itself was replaced.
-
+`source ~/venv/bin/activate` or rebuild the venv, if the pod itself was replaced.
 
 ---
 
 # Part 2 — Model to bitstream
+
+Within Part 2, sections 5–7 run in seconds and can be re-run freely. Sections 8–9 are the
+long Vitis steps.
 
 ## 5. Train a model
 
@@ -212,7 +209,7 @@ This tutorial uses the jet-tagging model from
 [`hls4ml-tutorial`](https://github.com/fastmachinelearning/hls4ml-tutorial)
 `1_getting_started/1a_train_keras.ipynb` — five-class classification of boosted jets from
 16 high-level features, ~4,400 parameters. **Substitute your own Keras model if you have
-one; later sections only care about input and output shapes.**
+one. Later sections only care about input and output shapes.**
 
 ```bash
 cat > /work/run/train.py << 'EOF'
@@ -479,8 +476,8 @@ gcc -shared -fPIC -Wl,-soname,libudev.so.1 -o /work/fakelib/libudev.so.1 /work/u
 Now set up the environment:
 
 **Caution:**
-Order matters. Source the settings scripts **first**, then export `LD_LIBRARY_PATH` —
-XRT's `setup.sh` overwrites it, so exporting first silently drops the stub.
+Source the settings scripts **first**, then export `LD_LIBRARY_PATH` —
+XRT's `setup.sh` overwrites it, so exporting first drops the stub.
 
 ```bash
 source /tools/Xilinx/Vitis/2024.2/settings64.sh
@@ -492,7 +489,7 @@ echo $LD_LIBRARY_PATH        # /work/fakelib must come first
 ```
 
 Compile the kernel. This runs HLS synthesis and packages the result as an `.xo`. Run it
-detached so a dropped connection does not kill it:
+detached so that a lack of connection does not kill it:
 
 ```bash
 cd /work/prj
@@ -783,7 +780,7 @@ python3 host.py build/kernel_wrapper.xclbin \
 ```
 
 **Caution:**
-The float-to-fixed conversion must **truncate**, not round. `ap_fixed` defaults to
+The float-to-fixed conversion must **truncate** rather than round. `ap_fixed` defaults to
 `AP_TRN`, so assigning a float in the HLS testbench truncates toward −∞. A host that
 rounds disagrees with C-simulation on roughly 20% of rows — by up to 0.13 on this model —
 without ever changing an argmax, so it survives a spot check of a few rows.
