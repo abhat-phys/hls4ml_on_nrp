@@ -3,9 +3,7 @@ title: hls4ml on a U55C — Python host
 description: Take a Keras model from training to hardware inference on an Alveo U55C using hls4ml's Vitis backend, v++, and a pyxrt host program.
 ---
 
-This page walks a Keras model all the way to hardware inference on an Alveo U55C, using
-only the `Vitis` backend from
-[`fastmachinelearning/hls4ml`](https://github.com/fastmachinelearning/hls4ml) main.
+This page is an end-to-end tutorial  Keras model all the way to hardware inference on an Alveo U55C 
 
 hls4ml's Vitis backend stops at HLS synthesis and IP export. Three further pieces are
 needed to reach a running accelerator, and all three are ordinary AMD Vitis tooling rather
@@ -14,7 +12,7 @@ memory-mapped ports, a `v++` link against the U55C platform, and a host program 
 the card through XRT. This page supplies all three.
 
 The host here is Python, using the `pyxrt` bindings that ship with XRT — no compiler
-needed. See [hls4ml on a U55C — C++ host](/documentation/userdocs/fpgas/hls4ml-u55c-cpp)
+needed. See **[REPLACE THIS PART WITH THE HYPERLINK TO THE C++ VERSION (IF WE DO THAT)]**
 for the XRT native-API equivalent, which produces bit-identical output.
 
 ## The three parts
@@ -29,25 +27,16 @@ Only Part 3 needs a card. Requesting one during synthesis holds shared hardware 
 hours.
 
 Within Part 2, sections 5–7 run in seconds and can be re-run freely; sections 8–9 are the
-long Vitis steps and are worth getting right the first time.
+long Vitis steps.
 
 **Note:**
 This page assumes the basics in
 [Requesting FPGAs from a Pod](/documentation/userdocs/fpgas/using-fpgas-from-pods). For an
 interactive GUI environment see
-[Vivado and Vitis](/documentation/userdocs/fpgas/vivado-vitis) — but long synthesis runs are unsuccessful in Coder, which is why Part 2 uses a `Job`.
+[Vivado and Vitis](/documentation/userdocs/fpgas/vivado-vitis) but long synthesis runs are unsuccessful in Coder, which is why Part 2 uses a `Job`.
 
 
 ## Frequently asked questions
-
-**Q: Why can't hls4ml just build the bitstream itself?** A: On main today, no backend
-produces a U55C bitstream. `VitisAccelerator`
-([PR #991](https://github.com/fastmachinelearning/hls4ml/pull/991)) does exactly this but
-is unmerged; `VitisUnified`
-([PR #1376](https://github.com/fastmachinelearning/hls4ml/pull/1376)) is expected to, but
-currently supports zcu102 and kv260, not Alveo. The Coyote backend does target the U55C
-but replaces the card's static shell and needs a kernel module, neither of which is
-possible here.
 
 **Q: Will I need `xilinx.com/fpga_jtag`?** A: No. Loading an `.xclbin` uses the PCIe-side
 resource only. See
@@ -80,12 +69,11 @@ Verified end to end on 2026-09-10:
 | TensorFlow / Keras | tensorflow-cpu 2.19.1 / Keras 3.15.1 |
 | Python / numpy | 3.12 / 1.26.4 |
 
-:::note
+**Note:**
 The [Vivado and Vitis](/documentation/userdocs/fpgas/vivado-vitis) page lists Vitis
 2021.2 and 2023.2 only. The tools PVC also carries **2024.2**, which is what this page
 uses — check `ls /tools/Xilinx/Vitis/` for what is actually mounted. Likewise the Coder
 image now ships XRT 2.19.194 rather than the 2.15.225 documented elsewhere.
-:::
 
 ---
 
@@ -96,15 +84,12 @@ image now ships XRT 2.19.194 rather than the 2.15.225 documented elsewhere.
 An NRP account, a namespace, and `kubectl` — see
 [Getting access](/documentation/userdocs/start/getting-started).
 
-**The `xilinx-tools` PVC.** Vitis and Vivado live on a shared read-only volume that the
+**The `xilinx-tools` PVC.** Vitis and Vivado exist on a shared read-only volume that the
 Coder FPGA template mounts at `/tools/Xilinx`. To use it from your own pods, ask the
 cluster admins on [Nautilus Support](https://nrp.ai/contact/) for a PVC pointing at that
 volume in your namespace, then check with `kubectl get pvc -n YOUR-NAMESPACE`.
 
-**ErrImagePull with unauthorized or denied** The registry normally allows anonymous pulls from inside the cluster. If you hit an auth error, ask on Nautilus Support for an imagePullSecrets entry in your namespace.
-
-Licensing needs no action — the cluster FlexLM server at `2100@xilinxd.xilinx-dev` is
-reachable from any pod, and every manifest here sets `XILINXD_LICENSE_FILE`.
+**ErrImagePull with unauthorized or denied** The registry normally allows anonymous pulls from inside the cluster. If you hit an auth error, ask on [Nautilus Support](https://nrp.ai/contact/) for an imagePullSecrets entry in your namespace. Licensing needs no action — the cluster FlexLM server at `2100@xilinxd.xilinx-dev` is reachable from any pod, and every manifest here sets `XILINXD_LICENSE_FILE`.
 
 ## 2. Create a work PVC
 
@@ -126,7 +111,7 @@ spec:
 See [Ceph FS / RBD](/documentation/userdocs/storage/ceph) for the other classes.
 
 CephFS ignores `fsGroup`, so a fresh PVC is root-owned and the image's `coder` user
-(uid 1000) cannot write to it. Fix it once, from a throwaway pod:
+(uid 1000) cannot write to it. Fix it from a throwaway pod:
 
 ```bash
 kubectl run fixperms --restart=Never --image=busybox -n YOUR-NAMESPACE \
@@ -136,11 +121,10 @@ kubectl logs fixperms -n YOUR-NAMESPACE
 kubectl delete pod fixperms -n YOUR-NAMESPACE
 ```
 
-:::caution
+**Caution:**
 Do this **once, on a fresh PVC**, and do not use `chown -R`. A recursive chown over a
 volume that already holds Vivado build trees walks hundreds of thousands of small files
 and can take ten minutes or more.
-:::
 
 ## 3. Start a build pod
 
@@ -178,12 +162,11 @@ kubectl apply -f build-pod.yaml
 kubectl exec -it hls4ml-build -n YOUR-NAMESPACE -- bash
 ```
 
-:::caution
+**Caution:**
 Pin `topology.kubernetes.io/region: us-west`. The vivado-vitis image is large enough that
 a cold pull on a node that has never cached it can exceed the kubelet's pull deadline,
 failing with `ImagePullBackOff` and a `context canceled` extraction error. The FPGAs and
 the tools volume are both US-West anyway.
-:::
 
 ## 4. Install hls4ml
 
@@ -203,29 +186,28 @@ pip install -e . "tensorflow-cpu<2.20" scikit-learn pandas
 ```
 
 Install everything in one `pip` command. Splitting it makes pip install numpy 2.x for
-hls4ml and then downgrade it for TensorFlow — a full uninstall and reinstall for nothing.
+hls4ml and then downgrade it for TensorFlow, resulting in a full uninstall and reinstall.
 `pandas` is needed by `fetch_openml` in the next section and is not pulled in by
 scikit-learn.
 
 The hls4ml checkout stays on the PVC; `pip install -e .` only writes a link to it, so the
 venv living in the container is not a problem.
 
-:::caution
+**Caution:**
 Do not keep your conversion script next to the hls4ml checkout. Python prepends the
 *script's* directory to `sys.path`, so a repo root containing an `hls4ml/` folder shadows
 the installed package as a namespace package. It fails as
 `AttributeError: module 'hls4ml' has no attribute 'utils'`, not as an ImportError.
-:::
 
 ```bash
 mkdir -p /work/run && cd /work/run
 python3 -c "import hls4ml; print(hls4ml.__file__)"     # None means shadowed
 ```
 
-:::note
+**Note:**
 `kubectl exec` gives you a fresh shell each time. After any reconnect, re-run
 `source ~/venv/bin/activate` — or rebuild the venv, if the pod itself was replaced.
-:::
+
 
 ---
 
@@ -233,11 +215,11 @@ python3 -c "import hls4ml; print(hls4ml.__file__)"     # None means shadowed
 
 ## 5. Train a model
 
-The jet-tagging model from
+This tutorial uses the jet-tagging model from
 [`hls4ml-tutorial`](https://github.com/fastmachinelearning/hls4ml-tutorial)
 `1_getting_started/1a_train_keras.ipynb` — five-class classification of boosted jets from
-16 high-level features, ~4,400 parameters. Substitute your own Keras model if you have
-one; later sections only care about input and output shapes.
+16 high-level features, ~4,400 parameters. **Substitute your own Keras model if you have
+one; later sections only care about input and output shapes.**
 
 ```bash
 cat > /work/run/train.py << 'EOF'
@@ -373,8 +355,8 @@ EOF
 
 Three values are model-dependent and must agree with `firmware/defines.h`:
 `NNET_ARRAY_DEPTH` is `input_t::size` (16), `DATA_SIZE_OUT` is `result_t::size` (5), and
-`in_buffer_t`/`out_buffer_t` are the model's default precision. For a different model,
-read those three off `defines.h` and change them here — nothing else in the wrapper
+`in_buffer_t`/`out_buffer_t` are the model's default precision. **For a different model,
+read those three off `defines.h` and change them here.** Nothing else in the wrapper
 changes.
 
 ```bash
@@ -454,22 +436,13 @@ set_clock_uncertainty 27%
 EOF
 ```
 
-The kernel clock is set with `clock=<Hz>:<kernel>` under `[hls]`. A `freqhz` option
-appears in some AMD documentation but does not bind here.
-
-These files are derived by hand from the wrapper that
-[hls4ml PR #991](https://github.com/fastmachinelearning/hls4ml/pull/991) generates, cut
-down to the minimum. If that PR or `VitisUnified` lands with Alveo support, this section
-becomes a backend call.
-
 ## 8. The libudev stub
 
-:::danger
+**Note:**
 This is a **different** crash from the documented
 [`realloc(): invalid pointer`](/documentation/userdocs/fpgas/using-fpgas-from-pods#vivado-crashes-mid-synthesis-with-realloc-invalid-pointer)
 failure, and the `lib/lnx64.o` `LD_LIBRARY_PATH` workaround does not fix it. Both can be
 applied together and neither interferes with the other.
-:::
 
 Vivado's license manager (`libXil_lmgr11.so`) calls `udev_enumerate_scan_devices` to build
 a webtalk host fingerprint. In a container the host's sysfs is mounted, so `/sys/class` is
@@ -820,12 +793,11 @@ python3 host.py build/kernel_wrapper.xclbin \
                 hw_results.dat
 ```
 
-:::caution
+**Caution:**
 The float-to-fixed conversion must **truncate**, not round. `ap_fixed` defaults to
 `AP_TRN`, so assigning a float in the HLS testbench truncates toward −∞. A host that
 rounds disagrees with C-simulation on roughly 20% of rows — by up to 0.13 on this model —
 without ever changing an argmax, so it survives a spot check of a few rows.
-:::
 
 ## 11. Compare against Keras
 
@@ -851,9 +823,9 @@ Throughput times only `run.wait()`; it excludes host buffer sync and xclbin load
 host reports roughly 20% higher on an identical bitstream with bit-identical outputs — the
 gap is Python interpreter overhead around the call, not hardware.
 
-The residual difference from Keras is `ap_fixed<16,6>` quantisation, not anything specific
-to running on Nautilus — the same model converted at the same precision gives the same
-figures anywhere.
+The residual difference from Keras is `ap_fixed<16,6>` quantization, not anything specific
+to running on Nautilus. The same model converted at the same precision gives the same
+figures when run anywhere.
 
 Release the card when done:
 
@@ -910,7 +882,7 @@ CephFS ignores `fsGroup`. Run the one-off chown from section 2.
 
 ### Creating the venv takes forever
 
-It is on CephFS. Put it in the container filesystem (`~/venv`) instead — nothing after
+It is on CephFS. Put it in the container filesystem (`~/venv`) instead. Nothing after
 Part 2 needs it.
 
 ### `python3` cannot find hls4ml after reconnecting
