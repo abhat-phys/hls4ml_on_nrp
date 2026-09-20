@@ -73,7 +73,7 @@ Coder FPGA template mounts at `/tools/Xilinx`. To use it from your own pods, ask
 cluster admins on [Nautilus Support](https://nrp.ai/contact/) for a PVC pointing at that
 volume in your namespace, then check with `kubectl get pvc -n YOUR-NAMESPACE`.
 
-**ErrImagePull with unauthorized or denied** The registry normally allows anonymous pulls from inside the cluster. If you hit an auth error, ask on [Nautilus Support](https://nrp.ai/contact/) for an imagePullSecrets entry in your namespace. Licensing needs no action — the cluster FlexLM server at `2100@xilinxd.xilinx-dev` is reachable from any pod, and every manifest here sets `XILINXD_LICENSE_FILE`.
+**`ErrImagePull` with unauthorized or denied** The registry normally allows anonymous pulls from inside the cluster. If you hit an auth error, ask on [Nautilus Support](https://nrp.ai/contact/) for an imagePullSecrets entry in your namespace. Licensing needs no action — the cluster FlexLM server at `2100@xilinxd.xilinx-dev` is reachable from any pod, and every manifest here sets `XILINXD_LICENSE_FILE`.
 
 ## 2. Create a work PVC
 
