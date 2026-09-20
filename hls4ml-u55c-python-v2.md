@@ -9,7 +9,7 @@ needed to reach a running accelerator: a kernel wrapper bridging hls4ml's stream
 memory-mapped ports, a `v++` link against the U55C platform, and a host program which drives
 the card through XRT.
 
-## The three parts
+## The full workflow
 
 | Part | What happens | Pod | FPGA? | Time |
 | --- | --- | --- | --- | --- |
@@ -47,7 +47,7 @@ inside the content, which matters for the Python and C++ files.
 
 ## Versions
 
-Latest verified end to end run:
+Verified end-to-end run as of September 2026:
 
 | Component | Version |
 | --- | --- |
