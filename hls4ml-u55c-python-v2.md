@@ -15,7 +15,7 @@ the card through XRT.
 | [2. Model to bitstream](#part-2--model-to-bitstream) | train, convert, wrapper, `v++ -c`, `v++ -l` | build, then a Job | No | ~4–7 h |
 | [3. Hardware validation](#part-3--hardware-validation) | load `.xclbin`, run, compare to Keras | FPGA pod | **Yes** | ~5 min |
 
-Only Part 3 needs a card. Please avoid requesting a card during synthesis, because that would hold shared hardware resources idle for hours.
+Only Part 3 needs a card. Please avoid requesting a card during synthesis, because that would hold shared hardware resources idle.
 
 **Note:**
 This page assumes the basics in
@@ -153,7 +153,7 @@ the tools volume are both US-West anyway.
 ## 4. Install hls4ml
 
 Put the virtualenv in the **container filesystem**, not on the PVC. A venv is tens of
-thousands of small files; creating it on CephFS takes many minutes, and nothing after
+thousands of small files and creating it on CephFS takes many minutes. Nothing after
 Part 2 needs it.
 
 ```bash
@@ -179,7 +179,7 @@ venv living in the container is not a problem.
 Do not keep your conversion script next to the hls4ml checkout. Python prepends the
 *script's* directory to `sys.path`, so a repo root containing an `hls4ml/` folder shadows
 the installed package as a namespace package. It fails as
-`AttributeError: module 'hls4ml' has no attribute 'utils'`, not as an ImportError.
+`AttributeError: module 'hls4ml' has no attribute 'utils'`.
 
 ```bash
 mkdir -p /work/run && cd /work/run
@@ -423,7 +423,7 @@ EOF
 ## 8. The libudev stub
 
 **Note:**
-This is a **different** crash from the documented
+This is a different crash from the documented
 [`realloc(): invalid pointer`](/documentation/userdocs/fpgas/using-fpgas-from-pods#vivado-crashes-mid-synthesis-with-realloc-invalid-pointer)
 failure, and the `lib/lnx64.o` `LD_LIBRARY_PATH` workaround does not fix it. Both can be
 applied together and neither interferes with the other.
@@ -520,7 +520,7 @@ link.
 ## 9. Link to a bitstream
 
 **Caution:**
-Run the link as a `Job`, not a bare pod. Bare pods are killed with exit 137 and no
+Run the link as a `Job`, not a bare pod. Bare pods fail with exit 137 and no
 surviving events, and Coder is unsuccessful with long-running processes even under `screen` or `setsid`.
 See [Running batch jobs](/documentation/userdocs/running/jobs).
 
@@ -583,7 +583,7 @@ kubectl apply -f link-job.yaml
 kubectl get job hls4ml-link -n YOUR-NAMESPACE
 ```
 
-Four to six hours, depending on the node. `v++` logs sparsely during place and route, so
+Four to six hours for completion, depending on the node. `v++` logs sparsely during place and route, so
 watch the Vivado implementation log instead:
 
 ```bash
@@ -604,8 +604,8 @@ Look for `Created build/kernel_wrapper.xclbin`.
 
 **Note:**
 `kubectl exec` stops working once the Job's pod reaches `Succeeded`. Check timing while
-the Job is still running, or read the logs afterwards from the FPGA pod in Part 3 — the
-PVC keeps everything.
+the Job is still running, or read the logs afterwards from the FPGA pod in Part 3. The
+PVC will still keep everything.
 
 ```bash
 kubectl delete job hls4ml-link -n YOUR-NAMESPACE
@@ -620,7 +620,7 @@ multiply-accumulate chains, but *which* layer moves between builds, since it dep
 the trained weights and the placement seed.
 
 That is not a broken design. Vitis handles setup violations by downscaling the kernel
-clock at runtime, so the bitstream builds and computes correctly — measurements in Part 3
+clock at runtime, so the bitstream builds and computes correctly. Measurements in Part 3
 imply an effective clock near 100 MHz against the 150 MHz requested. To close timing,
 raise `ReuseFactor`, lower the requested clock, or reduce precision.
 
@@ -672,8 +672,8 @@ xbutil examine
 One device should appear with shell `xilinx_u55c_gen3x16_xdma_base_3` and
 `Device Ready: Yes`.
 
-This is a fresh container, so the venv from Part 1 is gone. That does not matter —
-`pyxrt` ships with XRT and is already on `PYTHONPATH`, and numpy is the only other
+This is a fresh container, so the venv from Part 1 is gone. That does not matter, because
+`pyxrt` ships with XRT and is already on `PYTHONPATH`. numpy is the only other
 requirement:
 
 ```bash
@@ -776,7 +776,7 @@ python3 host.py build/kernel_wrapper.xclbin \
 **Caution:**
 The float-to-fixed conversion must **truncate** rather than round. `ap_fixed` defaults to
 `AP_TRN`, so assigning a float in the HLS testbench truncates toward −∞. A host that
-rounds disagrees with C-simulation on roughly 20% of rows — by up to 0.13 on this model —
+rounds disagrees with C-simulation on roughly 20% of rows (by up to 0.13 on this model)
 without ever changing an argmax, so it survives a spot check of a few rows.
 
 ## 11. Compare against Keras
