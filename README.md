@@ -21,7 +21,7 @@ Only Part 3 needs a card. Please avoid requesting a card during synthesis, becau
 This page assumes the basics in
 [Requesting FPGAs from a Pod](/documentation/userdocs/fpgas/using-fpgas-from-pods). For an
 interactive GUI environment see
-[Vivado and Vitis](/documentation/userdocs/fpgas/vivado-vitis) but long synthesis runs are unsuccessful in Coder, which is why Part 2 uses a `Job`.
+[Vivado and Vitis](/documentation/userdocs/fpgas/vivado-vitis) but long synthesis runs are unsuccessful in Coder, which is why Part 2 uses a Job.
 
 
 ## Frequently asked questions
