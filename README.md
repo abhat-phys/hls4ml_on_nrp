@@ -2,8 +2,7 @@
 
 This page is an end-to-end tutorial dealing with taking a Keras model all the way to hardware inference on Alveo U55C cards at the NRP cluster.
 
-hls4ml's `VitisUnified` backend does the whole flow for a U55C: HLS synthesis, the kernel
-wrapper, the `v++` link to an `.xclbin`, and a Python driver that runs it through XRT. This
+hls4ml's `VitisUnified` backend covers whole flow for a U55C. This
 page covers what NRP needs around it: storage, the tools volume, a `Job` for the long build,
 and an FPGA pod for the run.
 
@@ -21,7 +20,7 @@ Only Part 3 needs a card. Please avoid requesting a card during synthesis, becau
 This page assumes the basics in
 [Requesting FPGAs from a Pod](/documentation/userdocs/fpgas/using-fpgas-from-pods). For an
 interactive GUI environment see
-[Vivado and Vitis](/documentation/userdocs/fpgas/vivado-vitis) but long synthesis runs are unsuccessful in Coder, which is why Part 2 uses a Job.
+[Vivado and Vitis](/documentation/userdocs/fpgas/vivado-vitis) but long synthesis runs are unsuccessful in Coder, which is why we use a Job for Part 2.
 
 
 ## Frequently asked questions
