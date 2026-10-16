@@ -3,7 +3,7 @@
 This page is an end-to-end tutorial dealing with taking a Keras model all the way to hardware inference on Alveo U55C cards at the NRP cluster.
 
 hls4ml's `VitisUnified` backend covers whole flow for a U55C. This
-page covers what NRP needs around it: storage, the tools volume, a `Job` for the long build,
+page covers the NRP tools we use to run the whole workflow: storage, the tools volume, a `Job` for the long build,
 and an FPGA pod for the run.
 
 ## The full workflow
